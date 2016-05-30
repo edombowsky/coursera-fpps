@@ -17,7 +17,8 @@ courseId := "bRPXgjY9EeW6RApRXdjJPw"
 
 // See documentation in ProgFunBuild.scala
 assignmentsMap := {
-  val styleSheetPath = (baseDirectory.value / ".." / ".." / "project" / "scalastyle_config.xml").getPath
+  // val styleSheetPath = (baseDirectory.value / ".." / ".." / "project" / "scalastyle_config.xml").getPath
+  val styleSheetPath = (baseDirectory.value / "scalastyle_config.xml").getPath
   Map(
     "example" -> Assignment(
       packageName = "example",
