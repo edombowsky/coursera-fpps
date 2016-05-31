@@ -128,26 +128,27 @@ class FunSetSuite extends FunSuite {
       val s = diff(s1, s2)
       assert(contains(s, 1), "diff 1")
       assert(!contains(s, 2), "diff 2")
+      assert(!contains(s, 3), "diff 3")
     
       val t4 = union(s1, s2)
       val t5 = diff(t4, s3)
-      assert(contains(t5, 2), "diff 3")
-      assert(!contains(t5, 3), "diff 4")
+      assert(contains(t5, 2), "diff 4")
+      assert(!contains(t5, 3), "diff 5")
 
       val t6 = diff(t2, t1)
       printSet(t6)
-      assert(!contains(t6, 5), "diff 5")
-      assert(!contains(t6, 7), "diff 6")
+      assert(!contains(t6, 5), "diff 6")
+      assert(!contains(t6, 7), "diff 7")
     
       val t7 = diff(t2, t3)
       printSet(t7)
-      assert(contains(t7, 2), "diff 7")
-      assert(contains(t7, 4), "diff 8")
-      assert(!contains(t7, 1), "diff 9")
+      assert(contains(t7, 2), "diff 8")
+      assert(contains(t7, 4), "diff 9")
+      assert(!contains(t7, 1), "diff 10")
     }
   }
 
-  test("filter") {
+  test("filter contains only the subset for which a predicate holds.") {
     new TestSets {
       val set = union(s1, s2)
       val s = filter(set, x => x == 1)
@@ -158,27 +159,27 @@ class FunSetSuite extends FunSuite {
     }
   }
 
-  test("forall") {
+  test("forall checks whether all bound integers within a set satisfy a predicate") {
     new TestSets {
-      assert(forall(s1, x => true))
-      assert(!forall(union(s1, s2), x => x == 1))
+      assert(forall(s1, x => true), "forall 1")
+      assert(!forall(union(s1, s2), x => x == 1), "forall 2")
     }
   }
 
-  test("exists") {
+  test("exists checks whether bound integers within a set satisfy a predicate") {
     new TestSets {
-      assert(exists(union(s1, s2), x => x == 1))
-      assert(!exists(union(s1, s2), x => x == 3))
+      assert(exists(union(s1, s2), x => x == 1), "exists 1")
+      assert(!exists(union(s1, s2), x => x == 3), "exists 2")
     }
   }
   
-  test("map") {
+  test("map contains items in set transformed by a predicate") {
     new TestSets {
       
       val s = map(union(union(s1,s2),s3), x=>x*x)
-      assert(contains(s,4))
-      assert(contains(s,1))
-      assert(contains(s,9))
+      assert(contains(s,4), "map 1")
+      assert(contains(s,1), "map 2")
+      assert(contains(s,9), "map 3")
     }
   }
 
