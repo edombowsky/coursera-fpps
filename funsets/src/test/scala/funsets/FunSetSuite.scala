@@ -77,6 +77,10 @@ class FunSetSuite extends FunSuite {
     val s1 = singletonSet(1)
     val s2 = singletonSet(2)
     val s3 = singletonSet(3)
+
+    val t1 = Set(1,3,4,5,7,1000)
+    val t2 = Set(1,2,3,4)
+    val t3 = Set(1,3)
   }
 
   /**
@@ -119,11 +123,27 @@ class FunSetSuite extends FunSuite {
     }
   }
 
-  test("diff") {
+  test("diff contains the set of all elements of first set that are not in the second") {
     new TestSets {
       val s = diff(s1, s2)
       assert(contains(s, 1), "diff 1")
       assert(!contains(s, 2), "diff 2")
+    
+      val t4 = union(s1, s2)
+      val t5 = diff(t4, s3)
+      assert(contains(t5, 2), "diff 3")
+      assert(!contains(t5, 3), "diff 4")
+
+      val t6 = diff(t2, t1)
+      printSet(t6)
+      assert(!contains(t6, 5), "diff 5")
+      assert(!contains(t6, 7), "diff 6")
+    
+      val t7 = diff(t2, t3)
+      printSet(t7)
+      assert(contains(t7, 2), "diff 7")
+      assert(contains(t7, 4), "diff 8")
+      assert(!contains(t7, 1), "diff 9")
     }
   }
 
