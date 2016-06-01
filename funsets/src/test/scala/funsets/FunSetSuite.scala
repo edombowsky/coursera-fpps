@@ -168,8 +168,11 @@ class FunSetSuite extends FunSuite {
 
   test("exists checks whether bound integers within a set satisfy a predicate") {
     new TestSets {
-      assert(exists(union(s1, s2), x => x == 1), "exists 1")
-      assert(!exists(union(s1, s2), x => x == 3), "exists 2")
+      val s = union(s1, s2)
+      assert(exists(s, x => x == 1), "exists 1")
+      assert(!exists(s, x => x == 3), "exists 2")
+      assert(exists(s, x => x <= 1), "exists 3")
+      assert(!exists(s, x => x > 2), "exists 4")
     }
   }
   
