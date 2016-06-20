@@ -85,4 +85,17 @@ class TweetSetSuite extends FunSuite {
     }
   }
 
+  test("trending is ordered") {
+    def isHighToLow(tl: TweetList): Boolean = {
+      def isHighToLowCheck(tl: TweetList, lastTweet: Tweet): Boolean = {
+        if (tl.isEmpty) true
+        else if (lastTweet.retweets < tl.head.retweets) false
+        else isHighToLowCheck(tl.tail, tl.head)
+      }
+
+      isHighToLowCheck(tl.tail, tl.head)
+    }
+
+    assert(isHighToLow(GoogleVsApple.trending))
   }
+}
