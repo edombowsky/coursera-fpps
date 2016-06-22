@@ -77,17 +77,21 @@ object Huffman {
    */
   def times(chars: List[Char]): List[(Char, Int)] = {
 
-    def addToFreq(character: Char, freq: List[(Char, Int)]): List[(Char, Int)] = freq match {
-      case Nil    => List((character, 1))
-      case head :: tail => if(head._1 == character) (character, head._2 + 1) :: tail else head :: addToFreq(character, tail)
-    }
-
-    def timesAcc(chars: List[Char], freq: List[(Char, Int)]): List[(Char, Int)] = chars match {
-        case Nil    => freq
-        case character :: tail  => timesAcc(tail, addToFreq(character, freq))
+    def addToFreq(character: Char, freq: List[(Char, Int)]): List[(Char, Int)] =
+      freq match {
+        case Nil => List((character, 1))
+        case head :: tail => 
+          if (head._1 == character) (character, head._2 + 1) :: tail 
+          else head :: addToFreq(character, tail)
       }
 
-      timesAcc(chars, Nil)
+    def timesAcc(chars: List[Char], freq: List[(Char, Int)]): List[(Char, Int)] =
+      chars match {
+        case Nil => freq
+        case character :: tail => timesAcc(tail, addToFreq(character, freq))
+      }
+      
+    timesAcc(chars, Nil)
   }
   
   /**
