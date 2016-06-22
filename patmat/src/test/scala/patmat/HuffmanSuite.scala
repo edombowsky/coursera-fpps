@@ -12,6 +12,7 @@ class HuffmanSuite extends FunSuite {
 	trait TestTrees {
 		val t1 = Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5)
 		val t2 = Fork(Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5), Leaf('d',4), List('a','b','d'), 9)
+    val t3 = Leaf('a',2)
 	}
 
 
@@ -28,6 +29,12 @@ class HuffmanSuite extends FunSuite {
     }
   }
 
+  test("chars of leaf") {
+    new TestTrees {
+      assert(chars(t3) === List('a'))
+    }
+  }
+
   test("times of list") {
     new TestTrees {
       assert(times(List('a', 'b', 'a')) === List(('a', 2), ('b', 1)))
@@ -39,6 +46,12 @@ class HuffmanSuite extends FunSuite {
       val pairs = times(List('a', 'b', 'c', 'a', 'a'))
       assert(pairs.size == 3)
       assert(pairs.exists(pair => pair._1 == 'a' && pair._2 == 3))
+    }
+  }
+
+  test("times of nil") {
+    new TestTrees {
+      assert(times(Nil) === List())
     }
   }
 
@@ -67,11 +80,16 @@ class HuffmanSuite extends FunSuite {
     assert(string2Chars("hello, world") === List('h', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd'))
   }
 
-
   test("makeOrderedLeafList for some frequency table") {
     assert(makeOrderedLeafList(List(('t', 2), ('e', 1), ('x', 3))) === List(Leaf('e',1), Leaf('t',2), Leaf('x',3)))
   }
 
+  test("combine of singleton or nil") {
+    new TestTrees {
+      assert(combine(Nil) === Nil)
+      assert(combine(List(Leaf('a',2))) === List(Leaf('a',2)))
+    }
+  }
 
   test("combine of some leaf list") {
     val leaflist = List(Leaf('e', 1), Leaf('t', 2), Leaf('x', 4))
