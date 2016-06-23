@@ -85,17 +85,26 @@ class HuffmanSuite extends FunSuite {
     }
   }
 
-  test("createCodeTree") {
+  test("combine until singleton of some leaf list") {
     new TestTrees {
-      val tt1 = createCodeTree("aabbb".toList);
-      val tt2 = createCodeTree("aabbbdddd".toList)
-      assert(t1 === tt1)
-      assert(t2 === tt2)
+      val leaflist = List(Leaf('e', 1), Leaf('t', 2), Leaf('x', 4))
+      val expectedLeafList = List(Fork(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3), Leaf('x',4), List('e', 't', 'x'), 7))
+      assert(until(singleton, combine)(leaflist) === expectedLeafList)
     }
   }
 
-  test("create code tree"){
-    assert(createCodeTree("helloworld".toCharArray.toList) === Fork(Fork(Fork(Leaf('w',1),Leaf('r',1),List('w', 'r'),2),Leaf('o',2),List('w', 'r', 'o'),4),Fork(Fork(Leaf('d',1),Fork(Leaf('h',1),Leaf('e',1),List('h', 'e'),2),List('d', 'h', 'e'),3),Leaf('l',3),List('d', 'h', 'e', 'l'),6),List('w', 'r', 'o', 'd', 'h', 'e', 'l'),10))
+  test("until should reduce to a singleton") {
+    val leaflist = List(Leaf('b', 2), Leaf('c', 3), Leaf('d', 4), Leaf('f', 6), Leaf('g', 7))
+    assert(singleton(until(singleton, combine)(leaflist)))
+  }
+
+  test("createCodeTree from some chars") {
+    val chars = string2Chars("ettxxxx")
+    assert(createCodeTree(chars) === Fork(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3), Leaf('x',4), List('e', 't', 'x'), 7))
+  }
+
+  test("create code tree") {
+    assert(createCodeTree(List('a','b','a')) === Fork(Leaf('b',1), Leaf('a',2), List('b','a'),3))
   }
 
   test("test encode french") {
