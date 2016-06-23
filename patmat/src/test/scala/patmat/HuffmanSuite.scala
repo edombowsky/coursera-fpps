@@ -209,4 +209,93 @@ class HuffmanSuite extends FunSuite {
     val tree = createCodeTree("The quick brown fox jumps over the lazy dog".toCharArray.toList)
     println(quickEncode(tree)("is this right?".toCharArray.toList))
   }
+
+ def visualizeTree(tree: CodeTree) = {
+    def visualizeTree0(tree: CodeTree, totalRows: Int, totalCols: Int): Unit = {
+      try {
+        def constructTree(tree: CodeTree, row: Int, col: Int, result: Array[Array[String]]): Array[Array[String]] = {
+          def generateString(tree: CodeTree): String = tree match {
+            case Fork(left, right, chars, weight) => "(" + chars.mkString + ":" + weight + ")"
+            case Leaf(char, weight) => "[" + char + ":" + weight + "]"
+          }
+          def addIfFork(tree: CodeTree, row: Int, col: Int, result: Array[Array[String]]): Array[Array[String]] = tree match {
+            case Fork(left, right, chars, weight) =>
+              result(row + 1)(col) = "*" //limiter under fork (will be replaced)
+              //decrement or increment columns based on number of chars in fork
+              constructTree(left, row + 3, col - (chars.length - 1), result)
+              constructTree(right, row + 3, col + (chars.length - 1), result)
+            case _ => result //do nothing
+          }
+          if (row > 0) {
+            result(row - 2)(col) = "#" //limiter two characters above leaf (will be replaced)
+            result(row - 1)(col) = "|" //connector
+          }
+          result(row)(col) = generateString(tree) //display leaf or fork
+          addIfFork(tree, row, col, result)
+        }
+        val initialArray = Array.fill(totalRows, totalCols) { "" }
+        val visualizableTree = constructTree(tree, 0, totalRows / 2, initialArray)
+        printTree(visualizableTree)
+      } catch {
+        case e: ArrayIndexOutOfBoundsException =>
+          visualizeTree0(tree, totalRows + 3, totalCols + 4) //tricrement rows, quadcrement cols and retry
+      }
+      def printTree(array: Array[Array[String]]): Unit = {
+        def preserveWidth(field: String, colWidth: Int): String = {
+          def preserveWidth(field: String, switchDirection: Boolean): String = {
+            if (field.length > colWidth) field
+            else if (switchDirection) preserveWidth(field + " ", !switchDirection)
+            else preserveWidth(" " + field, !switchDirection)
+          }
+          preserveWidth(field, false)
+        }
+        def collapseCols(array: Array[Array[String]]): Array[Array[String]] = {
+          def determineColWidth(array: Array[Array[String]]): Array[Int] = {
+            val resultArray = Array.fill(totalCols) { 0 } //init columns to width 0
+            for (r <- array.indices) {
+              for (c <- array(r).indices) {
+                if (array(r)(c).length > resultArray(c)) resultArray(c) = array(r)(c).length //increase column width if needed
+              }
+            }
+            resultArray
+          }
+          val colWidths = determineColWidth(array)
+          for (r <- array.indices) {
+            for (c <- array(r).indices) {
+              array(r)(c) = preserveWidth(array(r)(c), colWidths(c))
+            }
+          }
+          array
+        }
+        def replaceLimiters(raw: String): String = {
+          def replaceLimiters0(input: String, pattern: String, toRight: Boolean): String = {
+            val builder = new StringBuilder(input)
+            (pattern.r findAllIn input).matchData foreach { m =>
+              for (s <- m.subgroups) {
+                builder.delete(0, builder.length()).append(m.before)
+                if (toRight) builder.append(" " + ("_" * (s.length - 3)) + "/*")
+                else builder.append(" \\" + ("_" * (s.length - 3)) + " ")
+                builder.append(m.after)
+              }
+            }
+            (pattern.r findAllIn builder.toString).matchData foreach { m =>
+              if (m.groupCount > 0) {
+                val newLine = replaceLimiters0(builder.toString, pattern, toRight)
+                builder.delete(0, builder.length()).append(newLine)
+              }
+            }
+            builder.toString
+          }
+          replaceLimiters0(replaceLimiters0(raw, """([#][ ]*[*])""", true), """([*][ ]*[#])""", false)
+        }
+        collapseCols(array).foreach { line =>
+          val rawOutput = line.mkString.replaceAll("""(?)\s+$""", "") //removes trailing spaces
+          val printMe = replaceLimiters(rawOutput)
+          if (printMe.length > 0) println(printMe)
+        }
+      }
+    }
+
+    visualizeTree0(tree, 1, 1)
+  }
 }
