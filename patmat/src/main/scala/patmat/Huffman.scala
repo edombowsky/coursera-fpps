@@ -176,7 +176,8 @@ object Huffman {
    * frequencies from that text and creates a code tree based on them.
    */
   def createCodeTree(chars: List[Char]): CodeTree = 
-    until(singleton, combine)(makeOrderedLeafList(times(chars)))(0)
+    // until(singleton, combine)(makeOrderedLeafList(times(chars)))(0)
+    until(singleton, combine)(makeOrderedLeafList(times(chars))).head
 
   // Part 3: Decoding
 
@@ -261,14 +262,24 @@ object Huffman {
    * a valid code tree that can be represented as a code table. Using the code tables of the
    * sub-trees, think of how to build the code table for the entire tree.
    */
-  def convert(tree: CodeTree): CodeTable = ???
+  def convert(tree: CodeTree): CodeTable = {
+    
+    def convertAux(tree: CodeTree, table: CodeTable, bits: List[Bit]): CodeTable = 
+      tree match {
+        case f: Fork => mergeCodeTables(convertAux(f.left, table, bits :+ 0), 
+                                        convertAux(f.right, table, bits :+ 1))
+        case l: Leaf => table :+ (l.char, bits)
+      }
+    
+    convertAux(tree, List(), List())
+  }
   
   /**
    * This function takes two code tables and merges them into one. Depending on how you
    * use it in the `convert` method above, this merge method might also do some transformations
    * on the two parameter code tables.
    */
-  def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable = ???
+  def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable = a ::: b
   
   /**
    * This function encodes `text` according to the code tree `tree`.
@@ -276,5 +287,18 @@ object Huffman {
    * To speed up the encoding process, it first converts the code tree to a code table
    * and then uses it to perform the actual encoding.
    */
-  def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = ???
+  def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = {
+    val table = convert(tree)
+    
+    def quickEncode_acc(remainingText: List[Char], bits: List[Bit]): List[Bit] =
+      if (remainingText.isEmpty) bits
+      else codeBits(table)(remainingText.head) ::: quickEncode_acc(remainingText.tail,bits)
+
+    quickEncode_acc(text,List())
+  }
+
+  def main(args: Array[String]): Unit = {
+    println("Converted french tree: "+ convert(frenchCode))
+    println("Decoded secret: " + decodedSecret.toString)      
+  }
 }
