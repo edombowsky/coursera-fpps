@@ -13,6 +13,7 @@ class HuffmanSuite extends FunSuite {
 		val t1 = Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5)
 		val t2 = Fork(Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5), Leaf('d',4), List('a','b','d'), 9)
     val t3 = Leaf('a',2)
+    val helloTree = Fork(Leaf('l', 2), Fork(Leaf('o', 1), Fork(Leaf('h', 1), Leaf('e', 1), List('h', 'e'), 2), List('o', 'h', 'e'), 3), List('l', 'o', 'h', 'e'), 5)
 	}
 
 
@@ -67,10 +68,14 @@ class HuffmanSuite extends FunSuite {
       === List(('s',1),('o',3),('m',1),('e',3),('-',5),('l',1),('n',2),('g',1),('r',3),('a',1),('d',3),('w',3),('i',1),('t',1),('f',1)))
   }
 
-  test("singleton of empty list") {
+  test("an empty list is NOT a singleton") {
     new TestTrees {
       assert(singleton(List()) === false)
     }
+  }
+
+  test("a list with more than one element is NOT a singleton"){
+    assert(singleton(List(Leaf('a', 1), Leaf('b',2))) === false)
   }
 
   test("singleton") {
@@ -115,10 +120,6 @@ class HuffmanSuite extends FunSuite {
     assert(decode(frenchCode, encode(frenchCode)("huffmanestcool".toList)) === "huffmanestcool".toList)
   }
 
-  test("convert to CodeTable"){
-    assert(convert(createCodeTree("helloworld".toCharArray.toList)) === List(('w',List(0, 0, 0)), ('r',List(0, 0, 1)), ('o',List(0, 1)), ('d',List(1, 0, 0)), ('h',List(1, 0, 1, 0)), ('e',List(1, 0, 1, 1)), ('l',List(1, 1))))
-  }
-
   test("string2chars(\"hello, world\")") {
     assert(string2Chars("hello, world") === List('h', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd'))
   }
@@ -130,6 +131,7 @@ class HuffmanSuite extends FunSuite {
   test("combine of singleton or nil") {
     new TestTrees {
       assert(combine(Nil) === Nil)
+      assert(combine(List()) === List())
       assert(combine(List(Leaf('a',2))) === List(Leaf('a',2)))
     }
   }
@@ -163,6 +165,82 @@ class HuffmanSuite extends FunSuite {
     assert(encode(t1)(secret) === a)
   }
 
+  test("creating a full huffman tree from a list of characters") {
+    new TestTrees {
+      assert(createCodeTree("hello".toList) === helloTree)
+    }
+  }
+
+  test("decoding an 'l' from the 'hello' tree") {
+    new TestTrees {
+      assert(decode(helloTree, List(0)) === List('l'))
+    }
+  }
+
+  test("decoding an 'o' from the 'hello' tree") {
+    new TestTrees {
+      assert(decode(helloTree, List(1,0)) === List('o'))
+    }
+  }
+
+  test("decoding an 'e' from the 'hello' tree") {
+    new TestTrees {
+      assert(decode(helloTree, List(1,1,1)) === List('e'))
+    }
+  }
+
+  test("decoding an 'h' from the 'hello' tree") {
+    new TestTrees {
+      assert(decode(helloTree, List(1,1,0)) === List('h'))
+    }
+  }
+
+  test("decoding 'lo' from the 'hello' tree") {
+    new TestTrees {
+      assert(decode(helloTree, List(0,1,0)) === List('l','o'))
+    }
+  }
+
+  test("decoding 'hello' from the 'hello' tree") {
+    new TestTrees {
+      assert(decode(helloTree, List(1,1,0,1,1,1,0,0,1,0)) === List('h','e','l','l','o'))
+    }
+  }
+
+  test("decoding the secret with the frenchcode tree"){
+    assert(decode(Huffman.frenchCode, Huffman.secret) === "huffmanestcool".toList)
+  }
+
+  test("encoding 'l' from the 'hello' tree") {
+    new TestTrees {
+      assert(encode(helloTree)(List('l')) === List(0))
+    }
+  }
+
+  test("encoding 'o' from the 'hello' tree") {
+    new TestTrees {
+      assert(encode(helloTree)(List('o')) === List(1,0))
+    }
+  }
+
+  test("encoding 'e' from the 'hello' tree") {
+    new TestTrees {
+      assert(encode(helloTree)(List('e')) === List(1,1,1))
+    }
+  }
+
+  test("encoding 'h' from the 'hello' tree") {
+    new TestTrees {
+      assert(encode(helloTree)(List('h')) === List(1,1,0))
+    }
+  }
+
+  test("encoding 'hello' from the 'hello' tree") {
+    new TestTrees {
+      assert(encode(helloTree)(List('h','e','l','l','o')) === List(1,1,0,1,1,1,0,0,1,0))
+    }
+  }
+
   test("decode and encode a very short text should be identity") {
     new TestTrees {
       assert(decode(t1, encode(t1)("ab".toList)) === "ab".toList)
@@ -176,13 +254,23 @@ class HuffmanSuite extends FunSuite {
     }
   }
 
-  test("mergeCodeTables with two tables") {
-    new TestTrees {
-      val tb1 = List(('a', List(0)), ('b', List(1)))
-      val tb2 = List(('c', List(0)), ('d', List(1)))
-      val expectedMerge = List(('a', List(0, 0)), ('c', List(1, 0)), ('b', List(0, 1)), ('d', List(1, 1)))
-      assert(mergeCodeTables(tb1, tb2) === expectedMerge)
-    }
+ test("merging two code tables") {
+    val one: CodeTable = List(('a', List(1,1,1)))
+    val two: CodeTable = List(('e', List(1,1,0)))
+    val merged: CodeTable = List(('a', List(1,1,1)), ('e', List(1,1,0)))
+    assert(mergeCodeTables(one, two) === merged)
+  }
+
+  test("merging two code tables where one is empty") {
+    val one: CodeTable = List()
+    val two: CodeTable = List(('e', List(1,1,0)))
+    assert(mergeCodeTables(one, two) === two)
+  }
+
+  test("merging two code tables both are the same table") {
+    val one: CodeTable = List(('e', List(1)))
+    val two: CodeTable = List(('e', List(0)))
+    assert(mergeCodeTables(one, two) === List(('e', List(1)), ('e', List(0)))) // List(('e', List(1,0))))
   }
 
   test("codeBits") {
@@ -194,6 +282,13 @@ class HuffmanSuite extends FunSuite {
     val tree = Fork( Fork( Leaf('c',1), Leaf('b',2), List('c', 'b'),3), Leaf('a',3), List('c', 'b', 'a'), 6)
     val table = List( ('c',List(0,0)), ('b',List(0,1)), ('a',List(1)) )
     assert(convert(tree) === table)
+  }
+
+  test("converting a codetree to a code table") {
+    new TestTrees {
+      val codetable: CodeTable = List(('l', List(0)), ('o', List(1, 0)), ('h', List(1, 1, 0)), ('e', List(1, 1, 1)))
+      assert(convert(helloTree) === codetable)
+    }
   }
 
   test("codeBits & convert") {
@@ -214,9 +309,10 @@ class HuffmanSuite extends FunSuite {
     }
   }
 
-  test("ultimate test"){
-    val tree = createCodeTree("The quick brown fox jumps over the lazy dog".toCharArray.toList)
-    println(quickEncode(tree)("is this right?".toCharArray.toList))
+  test("quick encoding 'hello'") {
+    new TestTrees {
+      assert(quickEncode(helloTree)(List('h','e','l','l','o')) === List(1,1,0,1,1,1,0,0,1,0))
+    }
   }
 
  def visualizeTree(tree: CodeTree) = {
