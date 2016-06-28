@@ -159,4 +159,19 @@ object Anagrams {
   
     subSentence(sentenceOccurrences(sentence))
   }
+
+  def sentenceAnagramsMemo(sentence: Sentence): List[Sentence] = {
+    val cache = collection.mutable.Map[Occurrences, List[Sentence]]()
+
+    def occurrenceAnagrams(o: Occurrences): List[Sentence] = o match {
+      case Nil => List(Nil)
+      case _ => {
+        cache.getOrElseUpdate(o, combinations(o) flatMap (
+          subtree => dictionaryByOccurrences(subtree) flatMap (
+            w => occurrenceAnagrams(subtract(o, subtree)).map(w :: _))))
+      }
+    }
+
+    occurrenceAnagrams(sentenceOccurrences(sentence))
+  }
 }
